@@ -2,6 +2,8 @@ package com.example.loveapp
 
 import android.os.Bundle
 import android.view.*
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
@@ -17,13 +19,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         MobileAds.initialize(this, getString(R.string.id_ads_project))
-
         val adRequest = AdRequest.Builder().build()
         adView.loadAd(adRequest)
-        val navView: NavigationView = findViewById(R.id.nav_view)
-        navView.setNavigationItemSelectedListener(this)
+        nav_view.setNavigationItemSelectedListener(this)
         sb_day.setOnTouchListener { _, _ -> true }
         handleEvent()
     }
@@ -37,8 +36,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
 
             img_share.setOnClickListener {
-                shareSocail(context, packageName)
+                shareSocial(context, packageName)
             }
+        }
+
+        tv_title_home.setOnClickListener {
+            popupContent(it, (it as TextView).text.toString())
+
+        }
+
+        tv_day.setOnClickListener {
+
+        }
+
+        tv_content.setOnClickListener {
+            popupContent(it, (it as TextView).text.toString())
+        }
+
+        img_her.setOnClickListener {
+
+        }
+
+        img_him.setOnClickListener {
+
+        }
+
+        tv_her.setOnClickListener {
+            popupContent(it, (it as TextView).text.toString())
+        }
+
+        tv_him.setOnClickListener {
+            popupContent(it, (it as TextView).text.toString())
         }
     }
 
@@ -86,5 +114,23 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+
+    private fun popupContent(view: View, title: String) {
+        val builder = AlertDialog.Builder(this)
+        val inflater = layoutInflater
+        val viewParent = inflater.inflate(R.layout.dialog_change_value, null)
+        val etContent = viewParent.findViewById(R.id.et_content) as TextView
+        val etTitle = viewParent.findViewById(R.id.tv_title) as TextView
+        etTitle.text = title
+        val viewDialog = builder.setView(viewParent)
+        viewDialog.setPositiveButton(
+            R.string.action_ok
+        ) { _, _ ->
+            if (!etContent.text.isNullOrBlank()) {
+                (view as TextView).text = etContent.text
+            }
+        }.show()
     }
 }
