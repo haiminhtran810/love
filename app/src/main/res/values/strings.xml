@@ -16,5 +16,9 @@
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
     <string name="id_ads_project">ca-app-pub-3524852624424593~6057450462</string>
-    <string name="ads_banner">ca-app-pub-3524852624424593/3404201116</string>
+    <string name="ads_banner">ca-app-pub-3940256099942544/6300978111</string>
+    <!--<string name="ads_banner">ca-app-pub-3524852624424593/3404201116</string>-->
+    <!--<string name="ads_interstitial">ca-app-pub-3524852624424593/4359405154</string>-->
+    <string name="ads_interstitial">ca-app-pub-3940256099942544/1033173712</string>
+
 </resources>

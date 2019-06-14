@@ -18,7 +18,7 @@
                 layout="@layout/layout_tootlbar"/>
 
         <androidx.appcompat.widget.AppCompatImageView
-                android:scaleType="fitCenter"
+                android:scaleType="center"
                 android:id="@+id/img_background"
                 android:background="@drawable/bg_ex"
                 app:layout_constraintTop_toBottomOf="@+id/toolbar"
@@ -36,6 +36,7 @@
                 android:layout_height="0dp"
         />
         <LinearLayout
+                android:id="@+id/lg_background"
                 app:layout_constraintHeight_percent="0.62"
                 android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@+id/toolbar"
