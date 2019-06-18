@@ -10,10 +10,12 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.example.loveapp.R
-
+import com.example.loveapp.data.local.PreferenceHelper
+import com.example.loveapp.data.local.PreferenceHelper.set
 
 class ImageSetter(var activity: Activity) {
     var takenPhotoFile: File? = null
+
 
     fun pickImage() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
@@ -53,7 +55,7 @@ class ImageSetter(var activity: Activity) {
     fun getPathFromURI(contentUri: Uri): String? {
         var res: String? = null
         val proj = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = activity.getContentResolver().query(contentUri, proj, null, null, null)
+        val cursor = activity.contentResolver.query(contentUri, proj, null, null, null)
         if (cursor.moveToFirst()) {
             val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
             res = cursor.getString(column_index)
@@ -66,7 +68,7 @@ class ImageSetter(var activity: Activity) {
         return MediaStore.Images.Media.getBitmap(activity.contentResolver, uri)
     }
 
-    fun popupContent(view: View, title: String) {
+    fun popupContent(view: View, title: String, key: String? = null) {
         val builder = AlertDialog.Builder(activity)
         val inflater = activity.layoutInflater
         val viewParent = inflater.inflate(R.layout.dialog_change_value, null)
@@ -79,6 +81,12 @@ class ImageSetter(var activity: Activity) {
         ) { _, _ ->
             if (!etContent.text.isNullOrBlank()) {
                 (view as TextView).text = etContent.text
+                var sharePref = PreferenceHelper.defaultPrefs(activity.baseContext)
+                if (!etContent.text.isNullOrBlank()) {
+                    key?.let {
+                        sharePref[key] = etContent.text.toString()
+                    }
+                }
             }
         }.show()
     }
