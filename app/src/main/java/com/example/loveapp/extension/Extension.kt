@@ -1,8 +1,7 @@
-package com.example.loveapp
+package com.example.loveapp.extension
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.startActivity
 
 fun shareSocial(context: Context, url: String) {

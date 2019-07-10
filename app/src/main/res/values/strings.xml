@@ -9,16 +9,32 @@
     <string name="action_ok">Ok</string>
     <string name="enter_text">Enter Text</string>
 
+
+    <!--menu-->
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="menu_tools">Tools</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
+
+
+    <string name="people_1">Name 1</string>
+    <string name="people_2">Name 2</string>
+
+    <string name="title_1">Title 1</string>
+    <string name="title_2">Title 2</string>
+
+    <string name="anniversary_setting">This Anniversary Setting</string>
+    <string name="date_setting">Date Setting</string>
+    <!--ads-->
     <string name="id_ads_project">ca-app-pub-3524852624424593~6057450462</string>
     <string name="ads_banner">ca-app-pub-3940256099942544/6300978111</string>
     <!--<string name="ads_banner">ca-app-pub-3524852624424593/3404201116</string>-->
     <!--<string name="ads_interstitial">ca-app-pub-3524852624424593/4359405154</string>-->
     <string name="ads_interstitial">ca-app-pub-3940256099942544/1033173712</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

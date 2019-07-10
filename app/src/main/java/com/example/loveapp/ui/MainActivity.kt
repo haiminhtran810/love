@@ -1,15 +1,17 @@
-package com.example.loveapp
+package com.example.loveapp.ui
 
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.loveapp.R
 import com.example.loveapp.data.local.Constant
 import com.example.loveapp.data.local.PreferenceHelper
 import com.example.loveapp.extension.ImageSetter
@@ -20,9 +22,11 @@ import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_tootlbar.view.*
 import com.example.loveapp.data.local.PreferenceHelper.get
+import com.example.loveapp.extension.shareSocial
+import java.util.*
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ChangeDateListener {
     private lateinit var mInterstitialAd: InterstitialAd
     private lateinit var imageSetter: ImageSetter
     private var isMen = ImageType.BG
@@ -52,11 +56,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         handleEvent()
         getValueSharePreference()
-        isOpenFirst?.apply {
-            if (this) {
-                //
+        isOpenFirst?.let {
+            if (it) {
+                sequentiallyInit()
             }
         }
+
+        val fragment = HamburgerFragment.newInstance()
+        fragment.mOnChangeDateListener = this
+        supportFragmentManager.beginTransaction().replace(R.id.nav_container, fragment).commit()
+    }
+
+    private fun sequentiallyInit() {
+        imageSetter.popupContent(tv_title_home, (tv_title_home as TextView).text.toString(), Constant.HER_NAME)
+        imageSetter.popupContent(tv_content, (tv_content as TextView).text.toString(), Constant.HER_NAME)
+        imageSetter.popupContent(tv_her, (tv_her as TextView).text.toString(), Constant.HER_NAME)
+        imageSetter.popupContent(tv_him, (tv_him as TextView).text.toString(), Constant.HIM_NAME)
     }
 
     private fun getValueSharePreference() {
@@ -157,28 +172,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.nav_home -> {
-            }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_tools -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
-
-            }
-        }
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    override fun onChangeDate(calendar: Calendar) {
+        Log.d("ABC", calendar.toString())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
