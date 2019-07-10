@@ -2,15 +2,16 @@ package com.example.loveapp
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.LruCache
 import android.view.*
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.loveapp.data.local.Constant
+import com.example.loveapp.data.local.PreferenceHelper
 import com.example.loveapp.extension.ImageSetter
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -18,12 +19,15 @@ import com.google.android.gms.ads.InterstitialAd
 import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_tootlbar.view.*
+import com.example.loveapp.data.local.PreferenceHelper.get
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var mInterstitialAd: InterstitialAd
     private lateinit var imageSetter: ImageSetter
     private var isMen = ImageType.BG
+    private var sharedPre: SharedPreferences? = null
+    private var isOpenFirst: Boolean? = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,12 +46,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         nav_view.setNavigationItemSelectedListener(this)
         sb_day.setOnTouchListener { _, _ -> true }
-        handleEvent()
+        baseContext?.let {
+            sharedPre = PreferenceHelper.defaultPrefs(it)
+        }
 
-        var maxMemory =(Runtime.getRuntime().maxMemory()/1024) as Int
-        var cacheSize = maxMemory/8
-        /*val mMemoryCache = LruCache<String, Bitmap>(cacheSize){
-        };*/
+        handleEvent()
+        getValueSharePreference()
+        isOpenFirst?.apply {
+            if (this) {
+                //
+            }
+        }
+    }
+
+    private fun getValueSharePreference() {
+        sharedPre?.let {
+            val title: String? = it[Constant.TITLE_NAME]
+            val titleContent: String? = it[Constant.TITLE_NAME_2]
+            val himName: String? = it[Constant.HIM_NAME]
+            val herName: String? = it[Constant.HER_NAME]
+            tv_title_home.text = title ?: ""
+            tv_content.text = titleContent ?: ""
+            tv_her.text = herName ?: ""
+            tv_him.text = himName ?: ""
+            isOpenFirst = it[Constant.IS_OPEN_FIRST]
+
+        }
+
     }
 
     private fun handleEvent() {
@@ -71,7 +96,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         tv_title_home.setOnClickListener {
-            imageSetter.popupContent(it, (it as TextView).text.toString())
+            imageSetter.popupContent(it, (it as TextView).text.toString(), Constant.TITLE_NAME)
 
         }
 
@@ -82,7 +107,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
 
         tv_content.setOnClickListener {
-            imageSetter.popupContent(it, (it as TextView).text.toString())
+            imageSetter.popupContent(it, (it as TextView).text.toString(), Constant.TITLE_NAME_2)
         }
 
         img_her.setOnClickListener {
@@ -97,11 +122,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         tv_her.setOnClickListener {
 
-            imageSetter.popupContent(it, (it as TextView).text.toString())
+            imageSetter.popupContent(it, (it as TextView).text.toString(), Constant.HER_NAME)
         }
 
         tv_him.setOnClickListener {
-            imageSetter.popupContent(it, (it as TextView).text.toString())
+            imageSetter.popupContent(it, (it as TextView).text.toString(), Constant.HIM_NAME)
         }
 
         lg_background.setOnClickListener {
@@ -160,8 +185,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                ImageSetter.REQUEST_PICK_PHOTO -> data?.data?.let {
-                    val bitmap = imageSetter.uriToBitmap(it)
+                ImageSetter.REQUEST_PICK_PHOTO -> data?.data?.apply {
+                    val bitmap = imageSetter.uriToBitmap(this)
                     bitmap?.let {
                         when (isMen) {
                             ImageType.HIM -> img_him.setImageBitmap(it)
@@ -178,3 +203,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         HIM, HER, BG
     }
 }
+
+
