@@ -3,18 +3,16 @@ package com.example.loveapp.ui
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.os.Bundle
-import android.util.Log
-import android.view.*
 import android.widget.TextView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.loveapp.R
 import com.example.loveapp.data.local.Constant
+import com.example.loveapp.data.local.MyCache
 import com.example.loveapp.data.local.PreferenceHelper
-import com.example.loveapp.extension.ImageSetter
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.InterstitialAd
@@ -22,33 +20,25 @@ import com.google.android.gms.ads.MobileAds
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.layout_tootlbar.view.*
 import com.example.loveapp.data.local.PreferenceHelper.get
-import com.example.loveapp.extension.shareSocial
+import com.example.loveapp.extension.*
 import java.util.*
 
 
-class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ChangeDateListener {
+class MainActivity : AppCompatActivity(), ChangeDateListener {
     private lateinit var mInterstitialAd: InterstitialAd
-    private lateinit var imageSetter: ImageSetter
+    private var imageSetter = ImageSetter(this)
     private var isMen = ImageType.BG
     private var sharedPre: SharedPreferences? = null
     private var isOpenFirst: Boolean? = true
+    private val myCache = MyCache.newInstance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imageSetter = ImageSetter(this)
+        initAds()
 
-        MobileAds.initialize(this, getString(R.string.id_ads_project))
-        val adRequest = AdRequest.Builder().build()
-        adView.loadAd(adRequest)
-
-        // InterstitialAd
-        mInterstitialAd = InterstitialAd(this)
-        mInterstitialAd.adUnitId = getString(R.string.ads_interstitial)
-        mInterstitialAd.loadAd(AdRequest.Builder().build())
-
-        nav_view.setNavigationItemSelectedListener(this)
         sb_day.setOnTouchListener { _, _ -> true }
         baseContext?.let {
             sharedPre = PreferenceHelper.defaultPrefs(it)
@@ -61,10 +51,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 sequentiallyInit()
             }
         }
-
         val fragment = HamburgerFragment.newInstance()
         fragment.mOnChangeDateListener = this
         supportFragmentManager.beginTransaction().replace(R.id.nav_container, fragment).commit()
+    }
+
+    private fun initAds() {
+        MobileAds.initialize(this, getString(R.string.id_ads_project))
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
+
+        // InterstitialAd
+        mInterstitialAd = InterstitialAd(this)
+        mInterstitialAd.adUnitId = getString(R.string.ads_interstitial)
+        mInterstitialAd.loadAd(AdRequest.Builder().build())
     }
 
     private fun sequentiallyInit() {
@@ -75,23 +75,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun getValueSharePreference() {
+
+        myCache?.get(IMAGE_HIM)?.let {
+            img_him.setImageBitmap(it)
+        }
+        myCache?.get(IMAGE_HER)?.let {
+            img_her.setImageBitmap(it)
+        }
+        myCache?.get(IMAGE_BG)?.let {
+            img_background.setImageBitmap(it)
+        }
+
         sharedPre?.let {
             val title: String? = it[Constant.TITLE_NAME]
             val titleContent: String? = it[Constant.TITLE_NAME_2]
             val himName: String? = it[Constant.HIM_NAME]
             val herName: String? = it[Constant.HER_NAME]
-            tv_title_home.text = title ?: ""
-            tv_content.text = titleContent ?: ""
-            tv_her.text = herName ?: ""
-            tv_him.text = himName ?: ""
+            tv_title_home.text = title ?: resources.getString(R.string.title_1)
+            tv_content.text = titleContent ?: resources.getString(R.string.title_2)
+            tv_her.text = herName ?: resources.getString(R.string.people_1)
+            tv_him.text = himName ?: resources.getString(R.string.people_2)
             isOpenFirst = it[Constant.IS_OPEN_FIRST]
-
         }
-
     }
 
     private fun handleEvent() {
-
         mInterstitialAd.adListener = object : AdListener() {
             override fun onAdClosed() {
                 super.onAdClosed()
@@ -159,26 +167,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        drawerLayout.closeDrawer(GravityCompat.START)
-        return true
-    }
-
     override fun onChangeDate(calendar: Calendar) {
-        Log.d("ABC", calendar.toString())
+        sb_day.setDateUI(tv_min, tv_max, calendar)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -189,9 +179,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val bitmap = imageSetter.uriToBitmap(this)
                     bitmap?.let {
                         when (isMen) {
-                            ImageType.HIM -> img_him.setImageBitmap(it)
-                            ImageType.HER -> img_her.setImageBitmap(it)
-                            ImageType.BG -> img_background.setImageBitmap(it)
+                            ImageType.HIM -> {
+                                img_him.setImageBitmap(it)
+                                myCache[IMAGE_HIM] = it
+                            }
+                            ImageType.HER -> {
+                                img_her.setImageBitmap(it)
+                                myCache[IMAGE_HER] = it
+                            }
+                            ImageType.BG -> {
+                                img_background.setImageBitmap(it)
+                                myCache[IMAGE_BG] = it
+                            }
                         }
                     }
                 }
@@ -202,6 +201,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     enum class ImageType {
         HIM, HER, BG
     }
+
 }
-
-

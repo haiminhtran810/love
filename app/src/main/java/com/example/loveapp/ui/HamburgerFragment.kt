@@ -8,6 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 
 import com.example.loveapp.R
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
 
 class HamburgerFragment : Fragment() {
@@ -22,6 +25,9 @@ class HamburgerFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        MobileAds.initialize(context, getString(R.string.id_ads_project))
+        val adRequest = AdRequest.Builder().build()
+        adView.loadAd(adRequest)
         mOnChangeDateListener.onChangeDate(Calendar.getInstance())
     }
 

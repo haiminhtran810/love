@@ -109,10 +109,7 @@
                     android:layout_height="match_parent"/>
             <androidx.appcompat.widget.AppCompatSeekBar
                     android:id="@+id/sb_day"
-                    android:max="500"
-                    android:min="0"
                     android:thumb="@drawable/ic_heard"
-                    android:progress="300"
                     android:layout_weight="1"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"/>
