@@ -3,7 +3,6 @@ package com.example.loveapp.ui
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.TextView
 import androidx.core.view.GravityCompat
@@ -11,7 +10,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.loveapp.R
 import com.example.loveapp.data.local.Constant
-import com.example.loveapp.data.local.MyCache
 import com.example.loveapp.data.local.PreferenceHelper
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -30,7 +28,6 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
     private var isMen = ImageType.BG
     private var sharedPre: SharedPreferences? = null
     private var isOpenFirst: Boolean? = true
-    private val myCache = MyCache.newInstance()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,17 +73,36 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
 
     private fun getValueSharePreference() {
 
-        myCache?.get(IMAGE_HIM)?.let {
-            img_him.setImageBitmap(it)
-        }
-        myCache?.get(IMAGE_HER)?.let {
-            img_her.setImageBitmap(it)
-        }
-        myCache?.get(IMAGE_BG)?.let {
-            img_background.setImageBitmap(it)
-        }
-
         sharedPre?.let {
+            //image
+            val pathImageHim: String? = it[IMAGE_HIM]
+            val pathImageHer: String? = it[IMAGE_HER]
+            val pathImageHBG: String? = it[IMAGE_BG]
+
+            pathImageHim?.let {
+                imageSetter?.apply {
+                    getBitmapToPath(it)?.let { bitmap ->
+                        img_him.setImageBitmap(bitmap)
+                    }
+                }
+            }
+
+            pathImageHer?.let {
+                imageSetter?.apply {
+                    getBitmapToPath(it)?.let { bitmap ->
+                        img_her.setImageBitmap(bitmap)
+                    }
+                }
+            }
+
+            pathImageHBG?.let {
+                imageSetter?.apply {
+                    getBitmapToPath(it)?.let { bitmap ->
+                        img_background.setImageBitmap(bitmap)
+                    }
+                }
+            }
+            //text
             val title: String? = it[Constant.TITLE_NAME]
             val titleContent: String? = it[Constant.TITLE_NAME_2]
             val himName: String? = it[Constant.HIM_NAME]
@@ -173,23 +189,29 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        val editor = sharedPre?.edit()
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
+
                 ImageSetter.REQUEST_PICK_PHOTO -> data?.data?.apply {
                     val bitmap = imageSetter.uriToBitmap(this)
                     bitmap?.let {
                         when (isMen) {
                             ImageType.HIM -> {
                                 img_him.setImageBitmap(it)
-                                myCache[IMAGE_HIM] = it
+                                val a = imageSetter.getPathFromURI(this, baseContext)
+                                editor?.putString(IMAGE_HIM, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.apply()
                             }
                             ImageType.HER -> {
                                 img_her.setImageBitmap(it)
-                                myCache[IMAGE_HER] = it
+                                editor?.putString(IMAGE_HER, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.apply()
                             }
                             ImageType.BG -> {
                                 img_background.setImageBitmap(it)
-                                myCache[IMAGE_BG] = it
+                                editor?.putString(IMAGE_BG, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.apply()
                             }
                         }
                     }
