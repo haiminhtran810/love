@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 
 object PreferenceHelper {
-    private val SHAREPREFERENCE_NAME = "LoveSharedPreferences"
+    private const val SHAREPREFERENCE_NAME = "LoveSharedPreferences"
 
     fun defaultPrefs(context: Context): SharedPreferences =
         context.getSharedPreferences(SHAREPREFERENCE_NAME, Context.MODE_PRIVATE)

@@ -3,6 +3,7 @@ package com.example.loveapp.extension
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import java.io.File
 import android.provider.MediaStore
@@ -12,6 +13,9 @@ import androidx.appcompat.app.AlertDialog
 import com.example.loveapp.R
 import com.example.loveapp.data.local.PreferenceHelper
 import com.example.loveapp.data.local.PreferenceHelper.set
+import android.content.Context
+import java.io.FileInputStream
+
 
 class ImageSetter(var activity: Activity) {
     var takenPhotoFile: File? = null
@@ -22,13 +26,13 @@ class ImageSetter(var activity: Activity) {
             .addCategory(Intent.CATEGORY_OPENABLE)
 
         intent.type = "image/*";
-        intent.putExtra("crop", "true");
-        intent.putExtra("scale", true);
-        intent.putExtra("outputX", 256);
-        intent.putExtra("outputY", 256);
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-        intent.putExtra("return-data", true);
+        intent.putExtra("crop", "true")
+        intent.putExtra("scale", true)
+        intent.putExtra("outputX", 256)
+        intent.putExtra("outputY", 256)
+        intent.putExtra("aspectX", 1)
+        intent.putExtra("aspectY", 1)
+        intent.putExtra("return-data", true)
 
         activity.startActivityForResult(
             Intent.createChooser(
@@ -52,16 +56,33 @@ class ImageSetter(var activity: Activity) {
 
     }
 
-    fun getPathFromURI(contentUri: Uri): String? {
-        var res: String? = null
-        val proj = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = activity.contentResolver.query(contentUri, proj, null, null, null)
-        if (cursor.moveToFirst()) {
-            val column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-            res = cursor.getString(column_index)
+    fun getPathFromURI(conteentUri: Uri, context: Context): String? {
+        var path: String = ""
+
+        context.contentResolver.query(
+            conteentUri, arrayOf(MediaStore.Images.Media.DATA),
+            null, null, null
+        )?.apply {
+            val columnIndex = getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            moveToFirst()
+            path = getString(columnIndex)
+            close()
         }
-        cursor.close()
-        return res
+
+        return path
+    }
+
+    fun getBitmapToPath(path: String): Bitmap? {
+        return try {
+            val f = File(path)
+            val options = BitmapFactory.Options()
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888
+            BitmapFactory.decodeStream(FileInputStream(f), null, options)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+
     }
 
     fun uriToBitmap(uri: Uri): Bitmap {
