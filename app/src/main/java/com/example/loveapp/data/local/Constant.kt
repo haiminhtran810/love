@@ -7,4 +7,7 @@ object Constant {
     const val TITLE_NAME_2 = "TITLE_NAME_2"
     const val IS_OPEN_FIRST = "IS_OPEN_FIRST"
     const val SIZE_CACHE = 1024
+    const val YEAR = "YEAR"
+    const val MONTH = "MONTH"
+    const val DAY = "DAY"
 }

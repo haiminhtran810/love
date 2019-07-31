@@ -56,11 +56,11 @@ class ImageSetter(var activity: Activity) {
 
     }
 
-    fun getPathFromURI(conteentUri: Uri, context: Context): String? {
+    fun getPathFromURI(contentUri: Uri, context: Context): String? {
         var path: String = ""
 
         context.contentResolver.query(
-            conteentUri, arrayOf(MediaStore.Images.Media.DATA),
+            contentUri, arrayOf(MediaStore.Images.Media.DATA),
             null, null, null
         )?.apply {
             val columnIndex = getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
