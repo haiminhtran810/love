@@ -10,6 +10,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.loveapp.R
 import com.example.loveapp.data.local.Constant
+import com.example.loveapp.data.local.Constant.DAY
+import com.example.loveapp.data.local.Constant.MONTH
+import com.example.loveapp.data.local.Constant.YEAR
 import com.example.loveapp.data.local.PreferenceHelper
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -21,14 +24,13 @@ import com.example.loveapp.data.local.PreferenceHelper.get
 import com.example.loveapp.extension.*
 import java.util.*
 
-
-class MainActivity : AppCompatActivity(), ChangeDateListener {
+class MainActivity : AppCompatActivity(), ChangeDateListener, DatePickerInterface {
     private lateinit var mInterstitialAd: InterstitialAd
     private var imageSetter = ImageSetter(this)
     private var isMen = ImageType.BG
     private var sharedPre: SharedPreferences? = null
     private var isOpenFirst: Boolean? = true
-
+    private var permissionUtils = PermissionUtils()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,20 +44,30 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
         }
 
         handleEvent()
+
         getValueSharePreference()
+
         isOpenFirst?.let {
-            if (it) {
+            if (!it) {
                 sequentiallyInit()
             }
         }
+
+        if (!permissionUtils.shouldRequestReadStoragePermission(this)) {
+            permissionUtils.requestReadStoragePermission(this, R.string.enter_text)
+        }
+
         val fragment = HamburgerFragment.newInstance()
         fragment.mOnChangeDateListener = this
-        supportFragmentManager.beginTransaction().replace(R.id.nav_container, fragment).commit()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_container, fragment, HamburgerFragment.TAG)
+            .commit()
     }
 
     private fun initAds() {
         MobileAds.initialize(this, getString(R.string.id_ads_project))
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder()
+            .build()
         adView.loadAd(adRequest)
 
         // InterstitialAd
@@ -65,10 +77,18 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
     }
 
     private fun sequentiallyInit() {
-        imageSetter.popupContent(tv_title_home, (tv_title_home as TextView).text.toString(), Constant.HER_NAME)
-        imageSetter.popupContent(tv_content, (tv_content as TextView).text.toString(), Constant.HER_NAME)
+        imageSetter.popupContent(
+            tv_title_home, (tv_title_home as TextView).text.toString(), Constant.HER_NAME
+        )
+        imageSetter.popupContent(
+            tv_content, (tv_content as TextView).text.toString(), Constant.HER_NAME
+        )
         imageSetter.popupContent(tv_her, (tv_her as TextView).text.toString(), Constant.HER_NAME)
         imageSetter.popupContent(tv_him, (tv_him as TextView).text.toString(), Constant.HIM_NAME)
+
+        val dialogPicker = DatePickerFragment.newInstance()
+        dialogPicker.datePickerInterface = this
+        dialogPicker.show(supportFragmentManager, DatePickerFragment.TAG)
     }
 
     private fun getValueSharePreference() {
@@ -187,7 +207,11 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
         sb_day.setDateUI(tv_min, tv_max, calendar)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
         super.onActivityResult(requestCode, resultCode, data)
         val editor = sharedPre?.edit()
         if (resultCode == Activity.RESULT_OK) {
@@ -199,18 +223,23 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
                         when (isMen) {
                             ImageType.HIM -> {
                                 img_him.setImageBitmap(it)
-                                val a = imageSetter.getPathFromURI(this, baseContext)
-                                editor?.putString(IMAGE_HIM, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.putString(
+                                    IMAGE_HIM, imageSetter.getPathFromURI(this, baseContext)
+                                )
                                 editor?.apply()
                             }
                             ImageType.HER -> {
                                 img_her.setImageBitmap(it)
-                                editor?.putString(IMAGE_HER, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.putString(
+                                    IMAGE_HER, imageSetter.getPathFromURI(this, baseContext)
+                                )
                                 editor?.apply()
                             }
                             ImageType.BG -> {
                                 img_background.setImageBitmap(it)
-                                editor?.putString(IMAGE_BG, imageSetter.getPathFromURI(this, baseContext))
+                                editor?.putString(
+                                    IMAGE_BG, imageSetter.getPathFromURI(this, baseContext)
+                                )
                                 editor?.apply()
                             }
                         }
@@ -220,8 +249,18 @@ class MainActivity : AppCompatActivity(), ChangeDateListener {
         }
     }
 
+    override fun changeDate(date: Calendar) {
+        val editor = sharedPre?.edit()
+        editor?.putInt(YEAR, date.get(Calendar.YEAR))
+        editor?.putInt(MONTH, date.get(Calendar.MONTH))
+        editor?.putInt(DAY, date.get(Calendar.DAY_OF_MONTH))
+        editor?.commit()
+    }
+
     enum class ImageType {
-        HIM, HER, BG
+        HIM,
+        HER,
+        BG
     }
 
 }
